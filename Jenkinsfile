@@ -28,6 +28,14 @@ pipeline {
             }
         }
 
+        stage('Test SQLite') {
+            steps {
+                bat '''@echo off
+                    docker run --rm -e DB_PATH=/tmp/test-visits.db %IMAGE_NAME%:%BUILD_NUMBER% python -c "from app import app; c=app.test_client(); a=c.get('/').data; b=c.get('/').data; assert b'Kunjungan: 1' in a; assert b'Kunjungan: 2' in b; assert c.get('/health').status_code == 200; print('SQLite: kunjungan 1 menjadi 2, health check OK')"
+                '''
+            }
+        }
+
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
@@ -113,6 +121,16 @@ pipeline {
                         }
                     '''
                 }
+            }
+        }
+        stage('Run Application') {
+            steps {
+                bat '''@echo off
+                    docker volume create simple_app_ahmad_data
+                    if errorlevel 1 exit /b 1
+                    docker run -d --name simple-app-sqlite-ahmad-%BUILD_NUMBER% -p 127.0.0.1:5000:5000 -v simple_app_ahmad_data:/data %IMAGE_NAME%:%BUILD_NUMBER%
+                    if errorlevel 1 exit /b 1
+                '''
             }
         }
     }

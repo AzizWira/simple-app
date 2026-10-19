@@ -49,7 +49,7 @@ pipeline {
                         $username = $env:DOCKERHUB_USER.Trim()
                         $token = $env:DOCKERHUB_TOKEN.Trim()
 
-                        if ($username -ne 'auraiftitahh') {
+                        if ($username -ne 'ahmadazizwirawidodo') {
                             throw 'Username credential tidak sesuai'
                         }
 
